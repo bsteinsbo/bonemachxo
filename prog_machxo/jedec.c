@@ -16,7 +16,7 @@ static int is_ws(int c)
 	return (c == '\n' || c == ' ' || c == '\r' || c == '\t');
 }
 
-static int bitstring2bytes(uint8_t *data)
+static int bitstring_to_bytes(uint8_t *data)
 {
 	int dst_idx = 0;
 	int cur_bit = 0;
@@ -42,6 +42,29 @@ static int bitstring2bytes(uint8_t *data)
 		cur_bit++;
 	}
 	return dst_idx + 1;
+}
+
+static int reverse_bits(uint8_t *data, int data_len)
+{
+  int i, j;
+  // reverse bytes
+  for (i = 0; i < data_len / 2; i++)
+  {
+    uint8_t tmp = data[data_len - i - 1];
+    data[data_len - i - 1] = data[i];
+    data[i] = tmp;
+  }
+  // reverse bits
+  for (i = 0; i < data_len; i++)
+  {
+    uint8_t tmp = data[i];
+    data[i] = 0;
+    for (j = 0; j < 8; j++)
+    {
+      data[i] = (data[i] << 1) | (tmp & 1);
+      tmp >>= 1;
+    }
+  }
 }
 
 int open_jedec(char *fname)
@@ -184,7 +207,7 @@ int get_next_jedec_section(int *section, uint32_t *address, uint8_t **data, int 
 			return 0;
 		}
 		*data = buffer + i + 1;
-		*data_len = bitstring2bytes(*data);
+		*data_len = bitstring_to_bytes(*data);
 		return 1;
 	case 'C':
 		*section = SECTION_CHECK_SUM;
@@ -203,14 +226,25 @@ int get_next_jedec_section(int *section, uint32_t *address, uint8_t **data, int 
 		}
 		else
 		{
-			bitstring2bytes(buffer);
+			bitstring_to_bytes(buffer);
 			*address = buffer[3] + 0x100 * buffer[2] + 0x10000 * buffer[1] + 0x1000000 * buffer[0];
 		}
 		return 1;
 	case 'E':
 		*section = SECTION_ARCH;
 		*data = buffer;
-		*data_len = bitstring2bytes(buffer);
+		*data_len = bitstring_to_bytes(buffer);
+    /* Incredibly enough, Lattice has managed to reverse the bits for features... */
+    if (*data_len == 10)
+    {
+      reverse_bits(*data, 8);
+      reverse_bits(*data + 8, 2);
+    }
+    else
+    {
+      fprintf(stderr, "Unexpected data length '%d' for feature row/bits.  Expected 10 bytes.\n", *data_len);
+      return 0;
+    }
 		return 1;
 	default:
 		fprintf(stderr, "Unknown field '%c'\n", c);
