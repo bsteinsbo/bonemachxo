@@ -13,9 +13,9 @@ This is just for the fun of it, so no promises how far this will go.
 3. Interfacing to the MachXO on GPMC.
 4. Making a reasonable efficient JTAG master in the FPGA.
 5. Making a driver for this JTAG master in OpenOCD.
-6. Extend the JTAG master to be able to run SWD.  Driver for this also.
+6. Extend the JTAG master to be able to run SWD.  Make driver for this also.
 7. Interface to ARM trace signals and software to read the trace data.
-8. Design a cape using a MachXO FPGA as a Ethernet-enabled deug probe.
+8. Design a cape using a MachXO FPGA as a Ethernet-enabled debug probe.
 
 Contributions are of course welcome.
 
