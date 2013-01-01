@@ -64,7 +64,7 @@ int reset_configuration_flash_address();
 int program_configuration_flash(uint8_t *data, int data_len);
 int program_user_code(uint32_t user_code);
 int verify_user_code(uint32_t expected_user_code);
-int verify_configuration_flash(uint32_t bit_address, uint8_t *expected_data, int len, int is_user_flash);
+int verify_configuration_flash(uint8_t *expected_data, int data_len);
 int program_feature_row(uint8_t *feature_row);
 int verify_feature_row(uint8_t *expected_feature_row);
 int program_feature_bits(uint8_t *feature_bits);

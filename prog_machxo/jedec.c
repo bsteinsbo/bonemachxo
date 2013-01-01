@@ -199,6 +199,7 @@ int get_next_jedec_section(int *section, uint32_t *address, uint8_t **data, int 
 	case 'L':
 		*section = SECTION_FUSE_MAP;
 		*address = (uint32_t)strtol((char *)buffer, 0, 10);
+		*address /= 8; // Byte address, not bit address
 		for (i = 0; buffer[i] != '\n' && buffer[i] != 0; i++)
 			;
 		if (buffer[i] == 0)
@@ -222,7 +223,7 @@ int get_next_jedec_section(int *section, uint32_t *address, uint8_t **data, int 
 		}
 		else if (buffer[0] == 'H')
 		{
-			*address = (uint32_t)strtol((char *)(buffer + 1), 0, 16);
+			*address = (uint32_t)strtoul((char *)(buffer + 1), 0, 16);
 		}
 		else
 		{
@@ -234,17 +235,17 @@ int get_next_jedec_section(int *section, uint32_t *address, uint8_t **data, int 
 		*section = SECTION_ARCH;
 		*data = buffer;
 		*data_len = bitstring_to_bytes(buffer);
-    /* Incredibly enough, Lattice has managed to reverse the bits for features... */
-    if (*data_len == 10)
-    {
-      reverse_bits(*data, 8);
-      reverse_bits(*data + 8, 2);
-    }
-    else
-    {
-      fprintf(stderr, "Unexpected data length '%d' for feature row/bits.  Expected 10 bytes.\n", *data_len);
-      return 0;
-    }
+		/* Incredibly enough, Lattice has managed to reverse the bits for features... */
+		if (*data_len == 10)
+		{
+		  reverse_bits(*data, 8);
+		  reverse_bits(*data + 8, 2);
+		}
+		else
+		{
+		  fprintf(stderr, "Unexpected data length '%d' for feature row/bits.  Expected 10 bytes.\n", *data_len);
+		  return 0;
+		}
 		return 1;
 	default:
 		fprintf(stderr, "Unknown field '%c'\n", c);
